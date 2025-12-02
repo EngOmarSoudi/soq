@@ -145,7 +145,7 @@
 <!-- Products Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
     @forelse($products as $product)
-        <div class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group">
+        <a href="{{ route('products.show', $product->slug) }}" class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group no-underline">
             <!-- Product Image -->
             <div class="relative bg-gray-100 dark:bg-gray-700 h-48 overflow-hidden">
                 @if($product->image)
@@ -179,7 +179,7 @@
             
             <!-- Product Info -->
             <div class="p-4 flex-1 flex flex-col">
-                <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition">
+                <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition text-gray-900 dark:text-white">
                     {{ $product->name }}
                 </h3>
                 
@@ -214,9 +214,6 @@
                 
                 <!-- Actions -->
                 <div class="flex gap-2">
-                    <a href="{{ route('products.show', $product->slug) }}" class="flex-1 btn-primary text-white px-4 py-2 rounded-lg font-semibold transition text-center">
-                        {{ __('messages.view') }}
-                    </a>
                     <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition wishlist-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_wishlist') }}">
                         ♥
                     </button>
@@ -226,7 +223,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </a>
     @empty
         <div class="col-span-full text-center py-12">
             <p class="text-gray-500 dark:text-gray-400">{{ __('messages.no_products_available') }}</p>
