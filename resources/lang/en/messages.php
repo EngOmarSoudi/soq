@@ -28,6 +28,7 @@ return [
     'quick_view' => 'Quick View',
     'add_to_cart' => 'Add to Cart',
     'view_details' => 'View Details',
+    'in_your_cart' => 'In Your Cart',
     'all_categories' => 'All Categories',
     'browse_all_categories' => 'Browse all categories',
     'price_range' => 'Price Range',
@@ -159,4 +160,15 @@ return [
     'error' => 'Error',
     'warning' => 'Warning',
     'info' => 'Information',
+    
+    // Bank Details
+    'bank_name' => 'Bank Name',
+    'account_name' => 'Account Name',
+    'account_number' => 'Account Number',
+    'routing_number' => 'Routing Number / IBAN',
+    'swift_code' => 'SWIFT / BIC Code',
+    'payment_instructions' => 'Payment Instructions',
+    'please_transfer_amount' => 'Please transfer the total amount to one of the following bank accounts:',
+    'account_holder' => 'Account Holder',
+    'uploaded_receipt' => 'Uploaded Receipt',
 ];

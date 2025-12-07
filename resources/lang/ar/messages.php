@@ -28,6 +28,7 @@ return [
     'quick_view' => 'نظرة سريعة',
     'add_to_cart' => 'أضف إلى السلة',
     'view_details' => 'عرض التفاصيل',
+    'in_your_cart' => 'في سلة التسوق الخاصة بك',
     'all_categories' => 'جميع الفئات',
     'browse_all_categories' => 'تصفح جميع الفئات',
     'price_range' => 'نطاق السعر',
@@ -159,4 +160,15 @@ return [
     'error' => 'خطأ',
     'warning' => 'تحذير',
     'info' => 'معلومات',
+    
+    // Bank Details
+    'bank_name' => 'اسم البنك',
+    'account_name' => 'اسم الحساب',
+    'account_number' => 'رقم الحساب',
+    'routing_number' => 'رقم التوجيه / رقم الآيبان',
+    'swift_code' => 'كود السويفت / BIC',
+    'payment_instructions' => 'تعليمات الدفع',
+    'please_transfer_amount' => 'يرجى تحويل المبلغ الإجمالي إلى أحد الحسابات البنكية التالية:',
+    'account_holder' => 'صاحب الحساب',
+    'uploaded_receipt' => 'الإيصال المرفق',
 ];

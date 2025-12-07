@@ -111,6 +111,18 @@ class ProductController extends Controller
     public function show($slug)
     {
         $product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        
+        // Check if product is in user's cart and get quantity
+        $isInCart = false;
+        $cartQuantity = 0;
+        if (auth()->check()) {
+            $cartItem = auth()->user()->cartItems()->where('product_id', $product->id)->first();
+            if ($cartItem) {
+                $isInCart = true;
+                $cartQuantity = $cartItem->quantity;
+            }
+        }
+        
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
@@ -119,7 +131,7 @@ class ProductController extends Controller
         
         $reviews = $product->reviews()->where('status', 'approved')->with('user')->latest()->paginate(5);
         
-        return view('products.show', compact('product', 'relatedProducts', 'reviews'));
+        return view('products.show', compact('product', 'relatedProducts', 'reviews', 'isInCart', 'cartQuantity'));
     }
     
     public function categories(Request $request)

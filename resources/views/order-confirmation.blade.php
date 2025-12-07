@@ -62,7 +62,7 @@
             @foreach($order->items as $item)
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="font-medium">{{ $item->product->name[app()->getLocale()] ?? $item->product->name['en'] }}</p>
+                        <p class="font-medium">{{ $item->product->name }}</p>
                         @if($item->color || $item->size)
                             <div class="flex gap-2 mt-1">
                                 @if($item->color)
@@ -134,14 +134,35 @@
     <div class="max-w-2xl mx-auto card bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded mb-8">
         <h3 class="text-lg font-bold text-blue-900 dark:text-blue-300 mb-3">{{ __('messages.payment_instructions') }}</h3>
         <p class="text-blue-800 dark:text-blue-200 mb-3">{{ __('messages.please_transfer_amount') }}</p>
-        <div class="bg-white dark:bg-gray-700 p-4 rounded space-y-2 mb-4">
-            <div><strong>{{ __('messages.account_holder') }}:</strong> EcommStore Inc.</div>
-            <div><strong>{{ __('messages.account_number') }}:</strong> 1234567890</div>
-            <div><strong>{{ __('messages.bank') }}:</strong> Global Bank</div>
-            <div><strong>{{ __('messages.swift_code') }}:</strong> GLOBUS00</div>
-            <div><strong>{{ __('messages.amount') }}:</strong> SAR {{ number_format($order->total_amount, 2) }}</div>
-            <div><strong>{{ __('messages.reference') }}:</strong> {{ $order->order_number }}</div>
-        </div>
+        @if($bankAccounts && $bankAccounts->count() > 0)
+            <div class="space-y-4 mb-4">
+                @foreach($bankAccounts as $account)
+                    <div class="bg-white dark:bg-gray-700 p-4 rounded text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div><strong>{{ __('messages.bank_name') }}:</strong> {{ $account->bank_name }}</div>
+                            <div><strong>{{ __('messages.account_name') }}:</strong> {{ $account->account_name }}</div>
+                            <div><strong>{{ __('messages.account_number') }}:</strong> {{ $account->account_number }}</div>
+                            @if($account->routing_number)
+                                <div><strong>{{ __('messages.routing_number') }}:</strong> {{ $account->routing_number }}</div>
+                            @endif
+                            @if($account->swift_code)
+                                <div><strong>{{ __('messages.swift_code') }}:</strong> {{ $account->swift_code }}</div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <div class="bg-white dark:bg-gray-700 p-4 rounded mb-4">
+                <div><strong>{{ __('messages.amount') }}:</strong> SAR {{ number_format($order->total_amount, 2) }}</div>
+                <div><strong>{{ __('messages.reference') }}:</strong> {{ $order->order_number }}</div>
+            </div>
+        @else
+            <div class="bg-white dark:bg-gray-700 p-4 rounded space-y-2 mb-4">
+                <p>No active bank accounts found. Please contact support.</p>
+                <div><strong>{{ __('messages.amount') }}:</strong> SAR {{ number_format($order->total_amount, 2) }}</div>
+                <div><strong>{{ __('messages.reference') }}:</strong> {{ $order->order_number }}</div>
+            </div>
+        @endif
         
         <!-- Uploaded Receipt Preview -->
         @if($order->payment_reference)

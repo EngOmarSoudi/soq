@@ -87,7 +87,7 @@
         <!-- Products Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @forelse($products as $product)
-                <a href="{{ route('products.show', $product->slug) }}" class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group no-underline">
+                <div class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group">
                     <!-- Product Image -->
                     <div class="relative bg-gray-100 dark:bg-gray-700 h-48 overflow-hidden">
                         @if($product->image)
@@ -121,7 +121,7 @@
                     
                     <!-- Product Info -->
                     <div class="p-4 flex-1 flex flex-col">
-                        <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition text-gray-900 dark:text-white">
+                        <h3 class="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition">
                             {{ app()->getLocale() === 'en' ? $product->name['en'] ?? '' : $product->name['ar'] ?? '' }}
                         </h3>
                         
@@ -156,26 +156,19 @@
                         
                         <!-- Actions -->
                         <div class="flex gap-2">
-                            @if($product->hasVariants())
-                                <!-- For products with variants, clicking buttons prevents card navigation -->
-                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition wishlist-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_wishlist') }}" onclick="window.location='{{ route('products.show', $product->slug) }}'">
-                                    ♥
-                                </button>
-                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition add-to-cart-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_cart') }}" onclick="window.location='{{ route('products.show', $product->slug) }}'">
-                                    {{ __('messages.add_to_cart') }}
-                                </button>
-                            @else
-                                <!-- For products without variants, direct actions -->
-                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition wishlist-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_wishlist') }}">
-                                    ♥
-                                </button>
-                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition add-to-cart-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_cart') }}">
-                                    {{ __('messages.add_to_cart') }}
-                                </button>
-                            @endif
+                            <a href="{{ route('products.show', $product->slug) }}" class="flex-1 btn-primary text-white px-4 py-2 rounded-lg font-semibold transition text-center">
+                                {{ __('messages.view') }}
+                            </a>
+                            <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition wishlist-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_wishlist') }}">
+                                ♥
+                            </button>
+                            <!-- Add to Cart Button -->
+                            <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition add-to-cart-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_cart') }}">
+                                {{ __('messages.add_to_cart') }}
+                            </button>
                         </div>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="col-span-full text-center py-12">
                     <p class="text-gray-500 dark:text-gray-400">{{ __('messages.no_products_available') }}</p>
@@ -251,119 +244,95 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
     // Wishlist functionality
-    const wishlistButtons = document.querySelectorAll('.wishlist-btn');
-    wishlistButtons.forEach(btn => {
-        // Remove any existing event listeners to prevent duplication
-        btn.removeEventListener('click', handleWishlistClick);
-        // Add event listener
-        btn.addEventListener('click', handleWishlistClick);
-    });
-    
-    function handleWishlistClick(e) {
-        // Stop event from bubbling up to the card link
-        e.stopPropagation();
-        e.preventDefault();
-        const productId = this.dataset.productId;
-        const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
-        
-        if (!isAuthenticated) {
-            alert('{{ __('messages.please_login_wishlist') }}');
-            window.location.href = '{{ route('login') }}';
-            return;
-        }
-        
-        // Toggle wishlist
-        fetch(`/api/wishlist/${productId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                this.classList.toggle('active');
-                this.style.color = data.added ? '#ef4444' : '#3b82f6';
-                // Show success toast
-                showToast('{{ __("messages.added_to_wishlist") }}', 'success');
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+            
+            if (!isAuthenticated) {
+                alert('{{ __('messages.please_login_wishlist') }}');
+                window.location.href = '{{ route('login') }}';
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('{{ __("messages.error_occurred") }}', 'error');
+            
+            // Toggle wishlist
+            fetch(`/api/wishlist/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.toggle('active');
+                    this.style.color = data.added ? '#ef4444' : '#3b82f6';
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
-    }
+    });
     
     // Add to Cart functionality
-    const cartButtons = document.querySelectorAll('.add-to-cart-btn');
-    cartButtons.forEach(button => {
-        // Remove any existing event listeners to prevent duplication
-        button.removeEventListener('click', handleCartClick);
-        // Add event listener
-        button.addEventListener('click', handleCartClick);
-    });
-    
-    function handleCartClick(e) {
-        // Stop event from bubbling up to the card link
-        e.stopPropagation();
-        const productId = this.getAttribute('data-product-id');
-        const button = this;
-        
-        // Show loading state
-        const originalText = button.innerHTML;
-        button.innerHTML = '<span class="flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding...</span>';
-        button.disabled = true;
-        
-        fetch('{{ route("cart.add") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                product_id: productId,
-                quantity: 1
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const button = this;
+            
+            // Show loading state
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding...</span>';
+            button.disabled = true;
+            
+            fetch('{{ route("cart.add") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: 1
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update cart count in header
-                updateCartCount(data.cart_count);
-                
-                // Show success toast
-                showToast(data.message || '{{ __("messages.product_added_to_cart") }}', 'success');
-            } else {
-                showToast(data.message || '{{ __("messages.error_occurred") }}', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('{{ __("messages.error_occurred") }}', 'error');
-        })
-        .finally(() => {
-            // Restore button state
-            button.innerHTML = originalText;
-            button.disabled = false;
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart count in header
+                    updateCartCount(data.cart_count);
+                    
+                    // Show success toast
+                    showToast(data.message || '{{ __("messages.product_added_to_cart") }}', 'success');
+                } else {
+                    showToast(data.message || '{{ __("messages.error_occurred") }}', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('{{ __("messages.error_occurred") }}', 'error');
+            })
+            .finally(() => {
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
         });
-    }
+    });
     
     // Filter form submission
     const filterForm = document.getElementById('filterForm');
-    if (filterForm) {
-        // Auto-submit on filter change (with debounce)
-        let filterTimeout;
-        filterForm.addEventListener('change', function() {
-            clearTimeout(filterTimeout);
-            filterTimeout = setTimeout(() => {
-                this.submit();
-            }, 500); // 500ms delay to prevent excessive submissions
-        });
-    }
-});
+    
+    // Auto-submit on filter change (with debounce)
+    let filterTimeout;
+    filterForm.addEventListener('change', function() {
+        clearTimeout(filterTimeout);
+        filterTimeout = setTimeout(() => {
+            this.submit();
+        }, 500); // 500ms delay to prevent excessive submissions
+    });
 </script>
 @endpush

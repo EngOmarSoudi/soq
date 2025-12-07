@@ -43,7 +43,7 @@ class ProfileController extends Controller
     public function addAddress(Request $request)
     {
         $request->validate([
-            'label' => 'required|string|max:255',
+            'label' => 'nullable|string|max:255',
             'street' => 'required|string',
             'city' => 'required|string',
             'state' => 'nullable|string',
@@ -57,7 +57,7 @@ class ProfileController extends Controller
         try {
             $address = Address::create([
                 'user_id' => auth()->id(),
-                'label' => $request->label,
+                'label' => $request->label ?? 'New Address',
                 'name' => $request->name ?? '',
                 'street_address' => $request->street,  // Map 'street' to 'street_address'
                 'city' => $request->city,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Address;
+use App\Models\BankAccount;
 use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Order;
@@ -12,6 +13,7 @@ use App\Services\PaymentService;
 use App\Services\AliExpressService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -65,58 +67,150 @@ class CartController extends Controller
             ]);
         }
         
-        $cartItem = CartItem::updateOrCreate(
-            [
+        // First, try to find an existing cart item with the same product and variants
+        $existingCartItem = CartItem::where([
+            'user_id' => Auth::id(),
+            'product_id' => $request->product_id,
+            'color' => $request->color,
+            'size' => $request->size,
+        ])->first();
+        
+        if ($existingCartItem) {
+            // If item exists, update the quantity (add the new quantity to existing)
+            $newQuantity = $existingCartItem->quantity + $request->quantity;
+            
+            // Check if there's enough stock for the new total quantity
+            if ($product->stock_quantity < $newQuantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient stock available. Current stock: ' . $product->stock_quantity,
+                ]);
+            }
+            
+            $existingCartItem->update(['quantity' => $newQuantity]);
+            $cartItem = $existingCartItem;
+        } else {
+            // If item doesn't exist, create a new one
+            $cartItem = CartItem::create([
                 'user_id' => Auth::id(),
                 'product_id' => $request->product_id,
                 'color' => $request->color,
                 'size' => $request->size,
-            ],
-            [
                 'quantity' => $request->quantity,
                 'price' => $product->price,
-            ]
-        );
+            ]);
+        }
         
         $cartCount = Auth::user()->cartItems()->sum('quantity');
+        $productQuantity = Auth::user()->cartItems()->where('product_id', $request->product_id)->sum('quantity');
         
         return response()->json([
             'success' => true,
             'message' => 'Product added to cart successfully',
             'cart_count' => $cartCount,
+            'product_quantity' => $productQuantity,
         ]);
     }
     
     public function update(Request $request, $itemId)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-        ]);
-        
-        $cartItem = CartItem::where('user_id', Auth::id())->where('id', $itemId)->firstOrFail();
-        $product = $cartItem->product;
-        
-        // Check if we have enough stock for the new quantity
-        if ($product->stock_quantity < $request->quantity) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Insufficient stock available',
+        try {
+            $request->validate([
+                'quantity' => 'required|integer|min:1',
             ]);
+            
+            \Log::info('Cart update request received', [
+                'item_id' => $itemId,
+                'quantity' => $request->quantity,
+                'user_id' => Auth::id()
+            ]);
+            
+            $cartItem = CartItem::where('user_id', Auth::id())->where('id', $itemId)->firstOrFail();
+            $product = $cartItem->product;
+            
+            \Log::info('Found cart item', [
+                'item_id' => $cartItem->id,
+                'product_id' => $product->id,
+                'current_quantity' => $cartItem->quantity,
+                'new_quantity' => $request->quantity
+            ]);
+            
+            // Check if we have enough stock for the new quantity
+            if ($product->stock_quantity < $request->quantity) {
+                $response = [
+                    'success' => false,
+                    'message' => 'Insufficient stock available. Available stock: ' . $product->stock_quantity,
+                ];
+                \Log::info('Insufficient stock', $response);
+                return response()->json($response);
+            }
+            
+            // Update cart item quantity
+            $result = $cartItem->update(['quantity' => $request->quantity]);
+            
+            \Log::info('Cart item update result', [
+                'item_id' => $cartItem->id,
+                'requested_quantity' => $request->quantity,
+                'updated_quantity' => $cartItem->quantity,
+                'update_result' => $result
+            ]);
+            
+            // Refresh the model to ensure we have the latest data
+            $cartItem->refresh();
+            
+            \Log::info('Cart item after refresh', [
+                'item_id' => $cartItem->id,
+                'quantity' => $cartItem->quantity
+            ]);
+            
+            // Verify the update was saved by querying the database directly
+            $verifiedItem = CartItem::find($cartItem->id);
+            \Log::info('Cart item verified from database', [
+                'item_id' => $verifiedItem->id,
+                'quantity' => $verifiedItem->quantity
+            ]);
+            
+            // Clear any possible cache
+            Cache::flush();
+            
+            // Also clear model cache if any
+            DB::table('cache')->truncate();
+            
+            $cartItems = Auth::user()->cartItems()->with('product')->get();
+            $newTotal = $cartItems->sum(fn($item) => $item->quantity * $item->price);
+            $itemTotal = $request->quantity * $cartItem->price;
+            
+            // Calculate updated cart count
+            $cartCount = $cartItems->sum('quantity');
+            
+            $response = [
+                'success' => true,
+                'message' => 'Cart updated successfully',
+                'new_total' => number_format($newTotal, 2, '.', ''),
+                'item_total' => number_format($itemTotal, 2, '.', ''),
+                'cart_count' => $cartCount,
+            ];
+            
+            \Log::info('Cart update response', $response);
+            
+            return response()->json($response);
+        } catch (\Exception $e) {
+            \Log::error('Error updating cart item: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'item_id' => $itemId,
+                'quantity' => $request->quantity,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $response = [
+                'success' => false,
+                'message' => 'An error occurred while updating the cart. Please try again.',
+            ];
+            
+            \Log::info('Cart update error response', $response);
+            
+            return response()->json($response, 500);
         }
-        
-        // Update cart item quantity
-        $cartItem->update(['quantity' => $request->quantity]);
-        
-        $cartItems = Auth::user()->cartItems()->with('product')->get();
-        $newTotal = $cartItems->sum(fn($item) => $item->quantity * $item->price);
-        $itemTotal = $request->quantity * $cartItem->price;
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Cart updated successfully',
-            'new_total' => number_format($newTotal, 2),
-            'item_total' => number_format($itemTotal, 2),
-        ]);
     }
     
     public function remove($itemId)
@@ -246,8 +340,34 @@ class CartController extends Controller
     
     public function checkout()
     {
-        $cartItems = Auth::user()->cartItems()->with('product')->get();
+        \Log::info('Checkout method called', [
+            'user_id' => Auth::id(),
+            'timestamp' => now()->toISOString()
+        ]);
         
+        // Force fresh retrieval without any caching
+        // Use newQuery() to bypass any model caching
+        $cartItems = CartItem::where('user_id', Auth::id())->with('product')->get();        
+        \Log::info('Retrieved cart items for checkout (with proper relationships)', [
+            'user_id' => Auth::id(),
+            'cart_items_count' => $cartItems->count(),
+            'cart_items' => $cartItems->map(function($item) {
+                $productName = 'Unknown';
+                if ($item->product) {
+                    if (is_array($item->product->name)) {
+                        $productName = $item->product->name[app()->getLocale()] ?? $item->product->name['en'] ?? $item->product->name['ar'] ?? 'Unknown';
+                    } else {
+                        $productName = $item->product->name;
+                    }
+                }
+                
+                return [
+                    'item_id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'product_name' => $productName
+                ];
+            })->toArray()        ]);        
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
@@ -255,7 +375,7 @@ class CartController extends Controller
         // Validate stock for all items in cart
         foreach ($cartItems as $item) {
             if ($item->product->stock_quantity < $item->quantity) {
-                return redirect()->route('cart.index')->with('error', 'Insufficient stock for item: ' . ($item->product->name[app()->getLocale()] ?? $item->product->name['en'] ?? $item->product->name) . '. Please update your cart.');
+                return redirect()->route('cart.index')->with('error', 'Insufficient stock for item: ' . $item->product->name . '. Please update your cart.');
             }
         }
         
@@ -328,7 +448,13 @@ class CartController extends Controller
             'has_coupon' => $coupon ? true : false
         ]);
         
-        return view('checkout', compact('cartItems', 'subtotal', 'total', 'coupon', 'discountAmount', 'taxAmount', 'shippingCost'));
+        $bankAccounts = BankAccount::where('is_active', true)->get();
+        
+        return response()
+            ->view('checkout', compact('cartItems', 'subtotal', 'total', 'coupon', 'discountAmount', 'taxAmount', 'shippingCost', 'bankAccounts'))
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', 'Sat, 01 Jan 2000 00:00:00 GMT');
     }
     
     public function applyCoupon(Request $request)
@@ -485,7 +611,7 @@ class CartController extends Controller
             
             // Add conditional validation for payment method
             if ($request->payment_method === 'bank_transfer') {
-                $rules['transfer_receipt'] = 'required|file|mimes:jpg,jpeg,png,pdf|max:2048';
+                $rules['payment_receipt'] = 'required|file|mimes:jpg,jpeg,png,pdf|max:2048';
             } elseif ($request->payment_method === 'credit_card') {
                 $rules['card_number'] = 'required|string';
                 $rules['cardholder_name'] = 'required|string';
@@ -556,9 +682,9 @@ class CartController extends Controller
             
             // Handle bank transfer receipt upload
             $receiptPath = null;
-            if ($request->payment_method === 'bank_transfer' && $request->hasFile('transfer_receipt')) {
+            if ($request->payment_method === 'bank_transfer' && $request->hasFile('payment_receipt')) {
                 \Log::info('Uploading receipt file');
-                $receiptPath = $request->file('transfer_receipt')->store('receipts', 'public');
+                $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
                 \Log::info('Receipt uploaded', ['path' => $receiptPath]);
             }
             
@@ -642,6 +768,11 @@ class CartController extends Controller
             abort(403);
         }
         
-        return view('order-confirmation', compact('order'));
+        $bankAccounts = [];
+        if ($order->payment_method === 'bank_transfer') {
+            $bankAccounts = BankAccount::where('is_active', true)->get();
+        }
+        
+        return view('order-confirmation', compact('order', 'bankAccounts'));
     }
 }

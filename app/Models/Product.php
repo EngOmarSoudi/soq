@@ -134,7 +134,13 @@ class Product extends Model
      */
     public function hasVariants(): bool
     {
-        return !empty($this->colors) || !empty($this->sizes);
+        // Check if colors array exists and has values
+        $hasColors = !empty($this->colors) && is_array($this->colors) && count($this->colors) > 0;
+        
+        // Check if sizes array exists and has values
+        $hasSizes = !empty($this->sizes) && is_array($this->sizes) && count($this->sizes) > 0;
+        
+        return $hasColors || $hasSizes;
     }
     
     /**

@@ -290,7 +290,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                         </svg>
                         @if(auth()->check())
-                            <span class="cart-count absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <span class="cart-count absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
                                 {{ auth()->user()->cartItems()->count() }}
                             </span>
                         @endif
@@ -369,7 +369,6 @@
     </footer>
     
     <!-- Scripts -->
-    @stack('scripts')
     <script>
         // Initialize app state from server
         const appState = {
@@ -459,10 +458,7 @@
         
         // Global Toast Notification Function
         function showToast(message, type = 'success') {
-            // Remove any existing toasts
-            const existingToasts = document.querySelectorAll('.toast-notification');
-            existingToasts.forEach(toast => toast.remove());
-            
+            // Create toast element
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
             const icon = type === 'success' ? '✓' : '✕';
@@ -475,14 +471,22 @@
             `;
             
             toast.className = 'toast-notification fixed top-4 right-4 z-50 animate-slide-in';
+            
+            // Add unique identifier for proper cleanup
+            const toastId = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            toast.setAttribute('data-toast-id', toastId);
+            
             document.body.appendChild(toast);
             
             // Auto-remove after 4 seconds
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 if (toast.parentNode) {
                     toast.remove();
                 }
             }, 4000);
+            
+            // Store timeout ID on the element for potential cleanup
+            toast.timeoutId = timeoutId;
         }
         
         // Global function to update cart count
@@ -493,5 +497,7 @@
             }
         }
     </script>
+    
+    @stack('scripts')
 </body>
 </html>

@@ -64,7 +64,7 @@
                         
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium mb-1">{{ __('messages.street_address') }}</label>
-                            <input type="text" name="street_address" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                            <input type="text" name="street" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
                         </div>
                         
                         <div>
@@ -82,6 +82,13 @@
                             <div id="map" class="h-64 rounded-lg border border-gray-300 dark:border-gray-600"></div>
                             <input type="hidden" name="latitude" id="latitude">
                             <input type="hidden" name="longitude" id="longitude">
+                            <button type="button" onclick="getCurrentLocation()" class="mt-2 text-sm text-primary hover:text-primary-dark flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                {{ __('messages.use_current_location') }}
+                            </button>
                         </div>
                     </div>
                     
@@ -102,21 +109,100 @@
             <h2 class="text-2xl font-bold mb-4">{{ __('messages.payment_method') }}</h2>
             
             <div class="space-y-4">
-                <label class="flex items-start p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary transition">
-                    <input type="radio" name="payment_method" value="credit_card" class="mt-1 w-4 h-4 text-primary" required>
-                    <div class="ml-3">
-                        <p class="font-semibold">{{ __('messages.credit_card') }}</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('messages.pay_with_credit_card') }}</p>
+                <label class="block p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary transition mb-4">
+                    <div class="flex items-start">
+                        <input type="radio" name="payment_method" value="credit_card" class="mt-1 w-4 h-4 text-primary" required>
+                        <div class="ml-3 flex items-start flex-1">
+                            <div class="mr-3 mt-1">
+                                <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-semibold">{{ __('messages.credit_card') }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('messages.pay_with_credit_card') }}</p>
+                                
+                                <!-- CC Form -->
+                                <div id="creditCardForm" class="hidden mt-4 space-y-4 border-t pt-4 border-gray-100 dark:border-gray-700">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">{{ __('messages.card_number') }}</label>
+                                        <input type="text" name="card_number" placeholder="4242 4242 4242 4242" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">{{ __('messages.cardholder_name') }}</label>
+                                        <input type="text" name="cardholder_name" placeholder="John Doe" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">{{ __('messages.expiry_date') }}</label>
+                                            <div class="flex gap-2">
+                                                <input type="text" name="expiry_month" placeholder="MM" maxlength="2" class="w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                                                <input type="text" name="expiry_year" placeholder="YY" maxlength="2" class="w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">{{ __('messages.cvv') }}</label>
+                                            <input type="text" name="cvv" placeholder="123" maxlength="4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </label>
                 
                 <label class="flex items-start p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary transition">
                     <input type="radio" name="payment_method" value="bank_transfer" class="mt-1 w-4 h-4 text-primary" required>
-                    <div class="ml-3">
-                        <p class="font-semibold">{{ __('messages.bank_transfer') }}</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('messages.transfer_funds_bank') }}</p>
+                    <div class="ml-3 flex items-start">
+                        <div class="mr-3 mt-1">
+                            <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold">{{ __('messages.bank_transfer') }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ __('messages.transfer_funds_bank') }}</p>
+                        </div>
                     </div>
                 </label>
+                
+                <!-- Bank Transfer Receipt Upload (Hidden by default) -->
+                <div id="receiptUploadSection" class="hidden mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <!-- Bank Details -->
+                    @if(isset($bankAccounts) && $bankAccounts->count() > 0)
+                        <div class="mb-4 space-y-3">
+                            <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">{{ __('messages.payment_instructions') }}</h4>
+                            @foreach($bankAccounts as $account)
+                                <div class="bg-white dark:bg-gray-600 p-3 rounded border border-gray-200 dark:border-gray-500 text-sm">
+                                    <div class="grid grid-cols-1 gap-1">
+                                        <div class="font-bold">{{ $account->bank_name }}</div>
+                                        <div>{{ __('messages.account_name') }}: {{ $account->account_name }}</div>
+                                        <div>{{ __('messages.account_number') }}: {{ $account->account_number }}</div>
+                                        @if($account->routing_number)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('messages.routing_number') }}: {{ $account->routing_number }}</div>
+                                        @endif
+                                        @if($account->swift_code)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ __('messages.swift_code') }}: {{ $account->swift_code }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                            <div class="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                {{ __('messages.amount') }}: SAR <span id="bankTransferAmount">{{ number_format($total, 2) }}</span>
+                            </div>
+                        </div>
+                    @else
+                         <div class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 p-3 rounded text-sm">
+                            No active bank accounts found. Please contact support.
+                         </div>
+                    @endif
+
+                    <label class="block text-sm font-medium mb-2">{{ __('messages.upload_transfer_receipt') }}</label>
+                    <input type="file" name="payment_receipt" accept="image/*" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('messages.receipt_upload_help') }}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -129,8 +215,7 @@
                 @foreach($cartItems as $item)
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-medium">{{ $item->product->name[app()->getLocale()] ?? $item->product->name['en'] }}</p>
-                            <p class="text-gray-600 dark:text-gray-400">{{ __('messages.qty') }}: {{ $item->quantity }}</p>
+                            <p class="font-medium">{{ is_array($item->product->name) ? (app()->getLocale() === 'en' ? ($item->product->name['en'] ?? '') : ($item->product->name['ar'] ?? '')) : $item->product->name }}</p>                            <p class="text-gray-600 dark:text-gray-400">{{ __('messages.qty') }}: {{ $item->quantity }}</p>
                         </div>
                         <p class="font-semibold">SAR {{ number_format($item->price * $item->quantity, 2) }}</p>
                     </div>
@@ -202,6 +287,21 @@
         document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 document.getElementById('selectedPaymentMethod').value = this.value;
+                
+                // Show/hide receipt upload section based on payment method
+                const receiptSection = document.getElementById('receiptUploadSection');
+                const ccForm = document.getElementById('creditCardForm');
+                
+                if (this.value === 'bank_transfer') {
+                    receiptSection.classList.remove('hidden');
+                    ccForm.classList.add('hidden');
+                } else if (this.value === 'credit_card') {
+                    receiptSection.classList.add('hidden');
+                    ccForm.classList.remove('hidden');
+                } else {
+                    receiptSection.classList.add('hidden');
+                    ccForm.classList.add('hidden');
+                }
             });
         });
         
@@ -245,7 +345,49 @@
                 return;
             }
             
-            // Submit the form
+            // If bank transfer is selected, check if receipt is uploaded
+            if (paymentMethod === 'bank_transfer') {
+                const receiptInput = document.querySelector('input[name="payment_receipt"]');
+                if (receiptInput && receiptInput.files.length > 0) {
+                    // Add receipt file to form data
+                    const formData = new FormData(this);
+                    formData.append('payment_receipt', receiptInput.files[0]);
+                    
+                    // Submit with file
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => {
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            // If not JSON, redirect to success page
+                            window.location.href = '{{ route("order.confirmation", [":orderId"]) }}'.replace(':orderId', response.url.split('/').pop());
+                            return;
+                        }
+                    })
+                    .then(data => {
+                        if (data && data.success) {
+                            window.location.href = data.redirect || '{{ route("order.confirmation", [":orderId"]) }}'.replace(':orderId', data.order_id || '');
+                        } else {
+                            showToast(data.message || '{{ __("messages.error_occurred") }}', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('{{ __("messages.error_occurred") }}', 'error');
+                    });
+                    return;
+                }
+            }
+            
+            // Submit the form normally
             this.submit();
         });
     });
@@ -271,6 +413,81 @@
             // Update hidden inputs
             document.getElementById('latitude').value = e.latlng.lat;
             document.getElementById('longitude').value = e.latlng.lng;
+            
+            // Reverse geocode to get address details
+            geocodePosition(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    function geocodePosition(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.address) {
+                    const addr = data.address;
+                    
+                    // Populate fields
+                    const streetInput = document.querySelector('input[name="street"]');
+                    const cityInput = document.querySelector('input[name="city"]');
+                    const countryInput = document.querySelector('input[name="country"]');
+                    const postalCodeInput = document.querySelector('input[name="postal_code"]');
+                    
+                    if (countryInput) countryInput.value = addr.country || '';
+                    if (cityInput) cityInput.value = addr.city || addr.town || addr.village || addr.county || '';
+                    if (postalCodeInput) postalCodeInput.value = addr.postcode || '';
+                    
+                    // Construct street address
+                    let street = addr.road || addr.pedestrian || '';
+                    if (addr.house_number) street = addr.house_number + ' ' + street;
+                    if (addr.suburb && street) street += ', ' + addr.suburb;
+                    else if (addr.suburb) street = addr.suburb;
+                    
+                    if (streetInput) streetInput.value = street;
+                }
+            })
+            .catch(error => console.error('Geocoding error:', error));
+    }
+
+    function getCurrentLocation() {
+        if (!navigator.geolocation) {
+            showToast('Geolocation is not supported by your browser', 'error');
+            return;
+        }
+
+        const btn = document.querySelector('button[onclick="getCurrentLocation()"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="animate-pulse">Locating...</span>';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(position => {
+            const { latitude, longitude } = position.coords;
+            
+            // Move map to location
+            if (map) {
+                map.setView([latitude, longitude], 16);
+                
+                // Add/Move marker
+                if (marker) {
+                    marker.setLatLng([latitude, longitude]);
+                } else {
+                    marker = L.marker([latitude, longitude]).addTo(map);
+                }
+            }
+            
+            // Update inputs
+            document.getElementById('latitude').value = latitude;
+            document.getElementById('longitude').value = longitude;
+            
+            // Geocode
+            geocodePosition(latitude, longitude);
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, error => {
+            console.error('Geolocation error:', error);
+            showToast('Unable to retrieve location: ' + error.message, 'error');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         });
     }
     
@@ -280,10 +497,11 @@
         
         const formData = new FormData(this);
         
-        fetch('{{ route("address.store") }}', {
+        fetch('{{ route("profile.address.add") }}', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
             },
             body: formData
         })
