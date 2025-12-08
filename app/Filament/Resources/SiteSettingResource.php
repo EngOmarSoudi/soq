@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiteSettingResource\Pages;
 use App\Models\SiteSetting;
-use Filament\Forms;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Actions\EditAction;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -22,64 +24,63 @@ class SiteSettingResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'site_name';
 
-    public static function form(Schema $form): Schema
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Tabs::make('Settings')
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('General')
-                            ->schema([
-                                Forms\Components\TextInput::make('site_name')
-                                    ->label('Site Name')
-                                    ->required()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\TextInput::make('site_email')
-                                    ->label('Contact Email')
-                                    ->email()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\TextInput::make('site_phone')
-                                    ->label('Contact Phone')
-                                    ->tel()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\Textarea::make('site_address')
-                                    ->label('Address')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
-                                
-                                Forms\Components\Textarea::make('site_description')
-                                    ->label('Site Description')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
-                            ]),
-                        
-                        Forms\Components\Tabs\Tab::make('Social Media')
-                            ->schema([
-                                Forms\Components\TextInput::make('facebook_url')
-                                    ->label('Facebook URL')
-                                    ->url()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\TextInput::make('twitter_url')
-                                    ->label('Twitter URL')
-                                    ->url()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\TextInput::make('instagram_url')
-                                    ->label('Instagram URL')
-                                    ->url()
-                                    ->maxLength(255),
-                                
-                                Forms\Components\TextInput::make('linkedin_url')
-                                    ->label('LinkedIn URL')
-                                    ->url()
-                                    ->maxLength(255),
-                            ]),
-                    ])
+                // General Settings
+                TextInput::make('site_name')
+                    ->label('Site Name')
+                    ->required()
+                    ->maxLength(255),
+                
+                TextInput::make('site_email')
+                    ->label('Contact Email')
+                    ->email()
+                    ->maxLength(255),
+                
+                TextInput::make('site_phone')
+                    ->label('Contact Phone')
+                    ->tel()
+                    ->maxLength(255),
+                
+                Textarea::make('site_address')
+                    ->label('Physical Address')
+                    ->helperText('The address displayed in the footer.')
+                    ->rows(3)
                     ->columnSpanFull(),
+                
+                TextInput::make('site_address_map_url')
+                    ->label('Address Map Link (Optional)')
+                    ->url()
+                    ->helperText('If provided, the address will link to this URL. If empty, it will auto-generate a Google Maps search link for the address above.')
+                    ->columnSpanFull(),
+                
+                Textarea::make('site_description')
+                    ->label('Site Description')
+                    ->rows(3)
+                    ->columnSpanFull(),
+                
+                // Social Media
+                TextInput::make('facebook_url')
+                    ->label('Facebook URL')
+                    ->url()
+                    ->maxLength(255),
+                
+                TextInput::make('twitter_url')
+                    ->label('Twitter URL')
+                    ->url()
+                    ->maxLength(255),
+                
+                TextInput::make('instagram_url')
+                    ->label('Instagram URL')
+                    ->url()
+                    ->maxLength(255),
+                
+                TextInput::make('linkedin_url')
+                    ->label('LinkedIn URL')
+                    ->url()
+                    ->maxLength(255),
             ]);
     }
 
@@ -114,12 +115,10 @@ class SiteSettingResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    //
-                ]),
+                //
             ]);
     }
 

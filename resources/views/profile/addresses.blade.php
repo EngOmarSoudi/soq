@@ -43,7 +43,7 @@
                             <button onclick="editAddress({{ $address->id }})" class="text-primary hover:text-blue-600 font-semibold text-sm">
                                 {{ __('messages.edit') }}
                             </button>
-                            <form action="{{ route('address.delete', $address->id) }}" method="POST" class="inline">
+                            <form action="{{ route('profile.address.delete', $address->id) }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" class="text-red-600 hover:text-red-800 dark:hover:text-red-400 font-semibold text-sm" onclick="return confirm('{{ __('messages.confirm_delete_address') }}')">
                                     {{ __('messages.delete') }}
@@ -91,7 +91,7 @@
         <div class="card bg-white dark:bg-gray-800 rounded-xl p-6 sticky top-20">
             <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white" id="addressFormTitle">{{ __('messages.add_new_address') }}</h2>
             
-            <form id="addressForm" action="{{ route('address.add') }}" method="POST">
+            <form id="addressForm" action="{{ route('profile.address.add') }}" method="POST">
                 @csrf
                 <input type="hidden" id="addressId" name="address_id">
                 
@@ -215,7 +215,7 @@
     // Show add address form
     function showAddAddressForm() {
         document.getElementById('addressFormTitle').textContent = '{{ __('messages.add_new_address') }}';
-        document.getElementById('addressForm').action = '{{ route("address.add") }}';
+        document.getElementById('addressForm').action = '{{ route("profile.address.add") }}';
         document.getElementById('addressForm').reset();
         document.getElementById('addressId').value = '';
     }

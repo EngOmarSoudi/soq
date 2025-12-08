@@ -15,6 +15,7 @@ class SiteSetting extends Model
         'site_email',
         'site_phone',
         'site_address',
+        'site_address_map_url',
         'site_logo',
         'site_description',
         'facebook_url',

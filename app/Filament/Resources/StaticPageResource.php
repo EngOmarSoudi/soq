@@ -4,73 +4,22 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StaticPageResource\Pages;
 use App\Models\StaticPage;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
 
 class StaticPageResource extends Resource
 {
-    protected static ?string $model = StaticPage::class;
-
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
-
-    protected static string | \UnitEnum | null $navigationGroup = 'Content';
-
-    protected static ?int $navigationSort = 1;
-
-    protected static ?string $recordTitleAttribute = 'title';
-
-    public static function form(Schema $form): Schema
-    {
-        return $form
-            ->schema([
-                Forms\Components\Grid::make()
-                    ->columns(2)
-                    ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('slug', str($state)->slug())),
-                        
-                        Forms\Components\TextInput::make('slug')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true),
-                    ]),
-                
-                Forms\Components\RichEditor::make('content')
-                    ->columnSpanFull()
-                    ->toolbarButtons([
-                        'blockquote',
-                        'bold',
-                        'bulletList',
-                        'codeBlock',
-                        'h2',
-                        'h3',
-                        'italic',
-                        'link',
-                        'orderedList',
-                        'redo',
-                        'strike',
-                        'underline',
-                        'undo',
-                    ]),
-                
-                Forms\Components\Textarea::make('meta_description')
-                    ->rows(3)
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-                
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
-            ]);
-    }
+// ... (omitted unmodified code)
 
     public static function table(Table $table): Table
     {

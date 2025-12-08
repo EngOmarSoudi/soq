@@ -20,6 +20,7 @@ class SiteSettingSeeder extends Seeder
                 'site_email' => 'info@myecommercestore.com',
                 'site_phone' => '+1 (555) 123-4567',
                 'site_address' => '123 Main Street, City, Country',
+                'site_address_map_url' => 'https://maps.app.goo.gl/JNqM3VBu9CXD6bE39',
                 'site_description' => 'Welcome to our online store. We offer the best products at competitive prices.',
                 'facebook_url' => 'https://facebook.com/myecommercestore',
                 'twitter_url' => 'https://twitter.com/myecommercestore',
