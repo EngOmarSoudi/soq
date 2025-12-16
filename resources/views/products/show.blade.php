@@ -17,9 +17,30 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
     <!-- Product Images -->
     <div>
-        <div class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden mb-6">
-            @if($product->image)
-                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ is_array($product->name) ? (app()->getLocale() === 'en' ? ($product->name['en'] ?? '') : ($product->name['ar'] ?? '')) : $product->name }}" class="w-full h-auto object-cover">
+        <div class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden mb-6 relative group">
+            @php
+                $allImages = collect([$product->image])->merge($product->images ?? [])->filter()->unique()->values(); // Re-index values
+            @endphp
+            
+            @if($allImages->isNotEmpty())
+                <img id="mainImage" src="{{ asset('storage/' . $allImages->first()) }}" 
+                     data-index="0"
+                     alt="{{ is_array($product->name) ? (app()->getLocale() === 'en' ? ($product->name['en'] ?? '') : ($product->name['ar'] ?? '')) : $product->name }}" 
+                     class="w-full h-auto object-cover transition-opacity duration-300">
+                
+                @if($allImages->count() > 1)
+                    <!-- Navigation Buttons -->
+                    <button onclick="prevImage()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <button onclick="nextImage()" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                @endif
             @else
                 <div class="w-full h-96 flex items-center justify-center text-6xl bg-gray-100 dark:bg-gray-700">
                     📦
@@ -27,8 +48,22 @@
             @endif
         </div>
         
+        <!-- Image Gallery Thumbnails -->
+        @if($allImages->count() > 1)
+            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                @foreach($allImages as $index => $image)
+                    <button type="button" 
+                            onclick="changeMainImage('{{ asset('storage/' . $image) }}', {{ $index }}, this)" 
+                            data-index="{{ $index }}"
+                            class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 {{ $loop->first ? 'border-primary' : 'border-transparent' }} hover:border-primary transition-all gallery-thumbnail">
+                        <img src="{{ asset('storage/' . $image) }}" class="w-full h-full object-cover" alt="Product thumbnail">
+                    </button>
+                @endforeach
+            </div>
+        @endif
+        
         <!-- Product Badges -->
-        <div class="flex gap-3">
+        <div class="flex gap-3 mt-4">
             @if($product->is_featured)
                 <span class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold">
                     {{ __('messages.featured') }}
@@ -249,7 +284,7 @@
                 {{ __('messages.specifications') }}
             </button>
             <button data-tab="reviews" class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300">
-                {{ __('messages.reviews') }} ({{ $product->reviews()->count() }})
+                {{ __('messages.reviews') }} ({{ $reviews->count() }})
             </button>
         </nav>
     </div>
@@ -287,11 +322,11 @@
                     <ul class="space-y-2">
                         <li class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
                             <span class="text-gray-600 dark:text-gray-400">{{ __('messages.warranty') }}</span>
-                            <span>{{ $product->warranty_period }} {{ __('messages.months') }}</span>
+                            <span>{{ $product->warranty_months }} {{ __('messages.months') }}</span>
                         </li>
                         <li class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
                             <span class="text-gray-600 dark:text-gray-400">{{ __('messages.origin') }}</span>
-                            <span>{{ is_array($product->origin) ? (app()->getLocale() === 'en' ? ($product->origin['en'] ?? '') : ($product->origin['ar'] ?? '')) : $product->origin }}</span>
+                            <span>{{ is_array($product->origin_country) ? (app()->getLocale() === 'en' ? ($product->origin_country['en'] ?? '') : ($product->origin_country['ar'] ?? '')) : $product->origin_country }}</span>
                         </li>
                     </ul>
                 </div>
@@ -300,9 +335,9 @@
         
         <!-- Reviews Tab -->
         <div id="reviews-tab" class="tab-content hidden">
-            @if($product->reviews()->count() > 0)
+            @if($reviews->count() > 0)
                 <div class="space-y-6">
-                    @foreach($product->reviews as $review)
+                    @foreach($reviews as $review)
                         <div class="border-b border-gray-100 dark:border-gray-700 pb-6 last:border-0 last:pb-0">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -327,6 +362,11 @@
                             </div>
                         </div>
                     @endforeach
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6">
+                        {{ $reviews->links() }}
+                    </div>
                 </div>
             @else
                 <p class="text-gray-500 dark:text-gray-400">{{ __('messages.no_reviews_yet') }}</p>
@@ -334,29 +374,68 @@
             
             @auth
                 <div class="mt-8">
-                    <h4 class="font-semibold mb-4">{{ __('messages.write_review') }}</h4>
-                    <form method="POST" action="{{ route('reviews.store') }}">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">{{ __('messages.rating') }}</label>
-                            <div class="flex items-center">
-                                <div class="flex text-yellow-400 text-2xl" id="star-rating">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <span class="cursor-pointer star" data-value="{{ $i }}">☆</span>
-                                    @endfor
-                                </div>
-                                <input type="hidden" name="rating" id="rating-input" value="0" required>
+                    @if($userReview)
+                        <!-- Edit Existing Review Form -->
+                        <h4 class="font-semibold mb-4">{{ __('messages.edit_your_review') }}</h4>
+                        @if($userReview->status === 'pending')
+                            <div class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
+                                {{ __('messages.review_pending_approval') }}
                             </div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="comment" class="block text-sm font-medium mb-2">{{ __('messages.comment') }}</label>
-                            <textarea name="comment" id="comment" rows="4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" required></textarea>
-                        </div>
-                        <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold">
-                            {{ __('messages.submit_review') }}
-                        </button>
-                    </form>
+                        @endif
+                        <form method="POST" action="{{ route('reviews.update', $userReview->id) }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">{{ __('messages.rating') }}</label>
+                                <div class="flex items-center">
+                                    <div class="flex text-yellow-400 text-2xl" id="star-rating">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="cursor-pointer star" data-value="{{ $i }}">{{ $i <= $userReview->rating ? '★' : '☆' }}</span>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" name="rating" id="rating-input" value="{{ $userReview->rating }}" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="comment" class="block text-sm font-medium mb-2">{{ __('messages.comment') }}</label>
+                                <textarea name="comment" id="comment" rows="4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" required>{{ $userReview->comment }}</textarea>
+                            </div>
+                            <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold">
+                                {{ __('messages.update_review') }}
+                            </button>
+                        </form>
+                    @else
+                        <!-- New Review Form -->
+                        <h4 class="font-semibold mb-4">{{ __('messages.write_review') }}</h4>
+                        <form id="reviewForm" method="POST" action="{{ route('reviews.store') }}">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium mb-2">{{ __('messages.rating') }}</label>
+                                <div class="flex items-center">
+                                    <div class="flex text-yellow-400 text-2xl" id="star-rating">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <span class="cursor-pointer star" data-value="{{ $i }}">☆</span>
+                                        @endfor
+                                    </div>
+                                    <input type="hidden" name="rating" id="rating-input" value="0" required>
+                                </div>
+                                @error('rating')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="mb-4">
+                                <label for="comment" class="block text-sm font-medium mb-2">{{ __('messages.comment') }}</label>
+                                <textarea name="comment" id="comment" rows="4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('comment') border-red-500 @enderror" required>{{ old('comment') }}</textarea>
+                                @error('comment')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <button type="submit" class="btn-primary text-white px-6 py-2 rounded-lg font-semibold">
+                                {{ __('messages.submit_review') }}
+                            </button>
+                        </form>
+                    @endif
                 </div>
             @else
                 <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
@@ -371,6 +450,66 @@
 
 @push('scripts')
 <script>
+    // Image Gallery Functionality
+    const productImages = @json($allImages->values()); // Use values to ensure array
+    
+    function changeMainImage(src, index, element) {
+        const mainImage = document.getElementById('mainImage');
+        
+        // Update main image source with fade effect
+        mainImage.style.opacity = '0.5';
+        
+        setTimeout(() => {
+            mainImage.src = src;
+            mainImage.dataset.index = index;
+            mainImage.style.opacity = '1';
+        }, 150);
+        
+        // Update active thumbnail
+        document.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+            thumb.classList.remove('border-primary');
+            thumb.classList.add('border-transparent');
+        });
+        
+        if (element) {
+            element.classList.remove('border-transparent');
+            element.classList.add('border-primary');
+        } else {
+             // Find by index if element not passed
+            const thumb = document.querySelector(`.gallery-thumbnail[data-index="${index}"]`);
+            if (thumb) {
+                thumb.classList.remove('border-transparent');
+                thumb.classList.add('border-primary');
+            }
+        }
+    }
+    
+    function nextImage() {
+        const mainImage = document.getElementById('mainImage');
+        let currentIndex = parseInt(mainImage.dataset.index || 0);
+        let nextIndex = currentIndex + 1;
+        
+        if (nextIndex >= productImages.length) {
+            nextIndex = 0;
+        }
+        
+        const nextSrc = '{{ asset("storage") }}/' + productImages[nextIndex];
+        changeMainImage(nextSrc, nextIndex, null);
+    }
+    
+    function prevImage() {
+        const mainImage = document.getElementById('mainImage');
+        let currentIndex = parseInt(mainImage.dataset.index || 0);
+        let prevIndex = currentIndex - 1;
+        
+        if (prevIndex < 0) {
+            prevIndex = productImages.length - 1;
+        }
+        
+        const prevSrc = '{{ asset("storage") }}/' + productImages[prevIndex];
+        changeMainImage(prevSrc, prevIndex, null);
+    }
+
     // Tab switching functionality
     document.querySelectorAll('.tab-button').forEach(button => {
         button.addEventListener('click', function() {
@@ -484,6 +623,31 @@
             showToast('{{ __("messages.error_occurred") }}', 'error');
         });
     });
+    });
+
+    // Review Form Validation
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            const rating = document.getElementById('rating-input').value;
+            const comment = document.getElementById('comment').value;
+            let hasError = false;
+            
+            if (rating < 1) {
+                showToast("{{ __('messages.rating_field_is_required') }}", 'error');
+                hasError = true;
+            }
+            
+            if (comment.length < 10) {
+                showToast("{{ __('messages.comment_min_length') }}", 'error');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                e.preventDefault();
+            }
+        });
+    }
 </script>
 @endpush
 @endsection

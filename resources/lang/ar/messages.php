@@ -59,6 +59,10 @@ return [
     'write_review' => 'كتابة تقييم',
     'comment' => 'التعليق',
     'submit_review' => 'إرسال التقييم',
+    'edit_your_review' => 'تعديل تقييمك',
+    'update_review' => 'تحديث التقييم',
+    'review_updated' => 'تم تحديث تقييمك وهو قيد المراجعة.',
+    'review_pending_approval' => 'تقييمك قيد المراجعة من قبل المسؤول.',
     'no_reviews' => 'لا توجد تقييمات حتى الآن. كن أول من يقيم هذا المنتج!',
     
     // Online Products
@@ -171,4 +175,5 @@ return [
     'please_transfer_amount' => 'يرجى تحويل المبلغ الإجمالي إلى أحد الحسابات البنكية التالية:',
     'account_holder' => 'صاحب الحساب',
     'uploaded_receipt' => 'الإيصال المرفق',
+    'months' => 'أشهر',
 ];

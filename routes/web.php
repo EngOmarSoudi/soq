@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     
     // Review Routes
     Route::post('/reviews', [ReviewController::class, 'add'])->name('reviews.store');
+    Route::put('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
     
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');

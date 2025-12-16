@@ -15,6 +15,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Table;
 
 class ReviewResource extends Resource
@@ -37,8 +39,8 @@ class ReviewResource extends Resource
                 
                 TextInput::make('rating')
                     ->numeric()
-                    ->min(1)
-                    ->max(5)
+                    ->minValue(1)
+                    ->maxValue(5)
                     ->required(),
                 
                 Textarea::make('comment'),
@@ -58,9 +60,17 @@ class ReviewResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('product.name')
-                    ->getStateUsing(fn($record) => $record->product->name['en'] ?? $record->product->name['ar'] ?? 'N/A'),
+                    ->label('Product')
+                    ->formatStateUsing(function ($state, $record) {
+                        if (is_array($state)) {
+                            return $state['en'] ?? $state['ar'] ?? 'N/A';
+                        }
+                        return $state ?? 'N/A';
+                    })
+                    ->searchable(),
                 
-                TextColumn::make('user.name'),
+                TextColumn::make('user.name')
+                    ->searchable(),
                 
                 TextColumn::make('rating')
                     ->sortable(),
@@ -72,6 +82,10 @@ class ReviewResource extends Resource
                         'approved' => 'success',
                         'rejected' => 'danger',
                     }),
+                    
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -82,7 +96,8 @@ class ReviewResource extends Resource
                     ]),
             ])
             ->actions([
-                // Temporarily removed actions due to missing class error
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 

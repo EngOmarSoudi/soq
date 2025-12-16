@@ -59,6 +59,10 @@ return [
     'write_review' => 'Write a Review',
     'comment' => 'Comment',
     'submit_review' => 'Submit Review',
+    'edit_your_review' => 'Edit Your Review',
+    'update_review' => 'Update Review',
+    'review_updated' => 'Your review has been updated and is pending approval.',
+    'review_pending_approval' => 'Your review is pending approval by an administrator.',
     'no_reviews' => 'No reviews yet. Be the first to review this product!',
     
     // Online Products
@@ -171,4 +175,5 @@ return [
     'please_transfer_amount' => 'Please transfer the total amount to one of the following bank accounts:',
     'account_holder' => 'Account Holder',
     'uploaded_receipt' => 'Uploaded Receipt',
+    'months' => 'Months',
 ];

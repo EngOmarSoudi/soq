@@ -10,10 +10,10 @@ use App\Models\Product;
 use App\Services\AliExpressService;
 use BackedEnum;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Repeater;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -34,16 +34,15 @@ class ProductResource extends Resource
         return $schema
             ->schema([
                 // Basic Information
-                KeyValue::make('name')
-                    ->label('Product Name')
-                    ->keyLabel('Language')
-                    ->valueLabel('Name')
+                TextInput::make('name')
+                    ->label('Product Name (will display based on locale)')
+                    ->helperText('Enter product name - the system will use the appropriate language based on user locale')
                     ->required(),
                 
-                KeyValue::make('description')
-                    ->label('Description')
-                    ->keyLabel('Language')
-                    ->valueLabel('Description'),
+                TextInput::make('description')
+                    ->label('Product Description (will display based on locale)')
+                    ->helperText('Enter product description')
+                    ->columnSpanFull(),
                 
                 TextInput::make('sku')
                     ->label('SKU')
@@ -92,19 +91,18 @@ class ProductResource extends Resource
                     ->relationship('category', 'name')
                     ->required(),
                 
-                KeyValue::make('brand')
-                    ->label('Brand')
-                    ->keyLabel('Language')
-                    ->valueLabel('Brand'),
+                TextInput::make('brand')
+                    ->label('Brand (will display based on locale)')
+                    ->helperText('Enter brand name'),
                 
                 // Variants
-                \Filament\Forms\Components\Repeater::make('colors')
+                Repeater::make('colors')
                     ->label('Available Colors')
                     ->schema([
-                        \Filament\Forms\Components\TextInput::make('en')
+                        TextInput::make('en')
                             ->label('English')
                             ->required(),
-                        \Filament\Forms\Components\TextInput::make('ar')
+                        TextInput::make('ar')
                             ->label('Arabic')
                             ->required(),
                     ])
@@ -139,13 +137,13 @@ class ProductResource extends Resource
                         return [];
                     }),
                 
-                \Filament\Forms\Components\Repeater::make('sizes')
+                Repeater::make('sizes')
                     ->label('Available Sizes')
                     ->schema([
-                        \Filament\Forms\Components\TextInput::make('en')
+                        TextInput::make('en')
                             ->label('English')
                             ->required(),
-                        \Filament\Forms\Components\TextInput::make('ar')
+                        TextInput::make('ar')
                             ->label('Arabic')
                             ->required(),
                     ])
@@ -198,6 +196,27 @@ class ProductResource extends Resource
                 
                 Toggle::make('is_active')
                     ->default(true),
+                
+                // Product Specifications
+                TextInput::make('weight')
+                    ->label('Weight (kg)')
+                    ->numeric()
+                    ->suffix('kg'),
+                
+                TextInput::make('dimensions')
+                    ->label('Dimensions')
+                    ->placeholder('e.g., 10x20x30 cm'),
+                
+                TextInput::make('material')
+                    ->label('Material'),
+                
+                TextInput::make('origin_country')
+                    ->label('Origin Country'),
+                
+                TextInput::make('warranty_months')
+                    ->label('Warranty (Months)')
+                    ->numeric()
+                    ->suffix('months'),
             ]);
     }
 

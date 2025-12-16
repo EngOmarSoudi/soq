@@ -11,13 +11,16 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Filament\Forms\Set;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class ManageSiteSettings extends Page
+class ManageSiteSettings extends Page implements HasForms
 {
+    use InteractsWithForms;
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog';
 
     protected static string | \UnitEnum | null $navigationGroup = 'Settings';
@@ -31,7 +34,7 @@ class ManageSiteSettings extends Page
     public function mount(): void
     {
         $settings = SiteSetting::getSetting();
-        $this->form->fill($settings->toArray());
+        $this->fill(['data' => $settings->toArray()]);
     }
 
     public function form(Schema $form): Schema
@@ -54,9 +57,16 @@ class ManageSiteSettings extends Page
                     ->tel()
                     ->maxLength(255),
                 
-                Textarea::make('site_address')
-                    ->label('Address')
+               Textarea::make('site_address')
+                    ->label('Physical Address')
+                    ->helperText('The address displayed in the footer.')
                     ->rows(3)
+                    ->columnSpanFull(),
+                
+                TextInput::make('site_address_map_url')
+                    ->label('Address Map Link (Optional)')
+                    ->url()
+                    ->helperText('If provided, the address will link to this URL. If empty, it will auto-generate a Google Maps search link for the address above.')
                     ->columnSpanFull(),
                 
                 Textarea::make('site_description')
@@ -92,7 +102,7 @@ class ManageSiteSettings extends Page
     {
         try {
             $settings = SiteSetting::getSetting();
-            $settings->update($this->form->getState());
+            $settings->update($this->data);
             
             // Clear cache
             Cache::forget('site_settings');

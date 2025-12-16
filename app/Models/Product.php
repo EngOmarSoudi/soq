@@ -31,6 +31,11 @@ class Product extends Model
         'average_rating',
         'colors',
         'sizes',
+        'weight',
+        'dimensions',
+        'material',
+        'warranty_months',
+        'origin_country',
     ];
 
     protected $casts = [

@@ -44,7 +44,7 @@ class SiteSettingResource extends Resource
                     ->tel()
                     ->maxLength(255),
                 
-                Textarea::make('site_address')
+                TextInput::make('site_address')
                     ->label('Physical Address')
                     ->helperText('The address displayed in the footer.')
                     ->rows(3)

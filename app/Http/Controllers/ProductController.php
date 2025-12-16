@@ -131,7 +131,13 @@ class ProductController extends Controller
         
         $reviews = $product->reviews()->where('status', 'approved')->with('user')->latest()->paginate(5);
         
-        return view('products.show', compact('product', 'relatedProducts', 'reviews', 'isInCart', 'cartQuantity'));
+        // Check if current user has already reviewed this product
+        $userReview = null;
+        if (auth()->check()) {
+            $userReview = $product->reviews()->where('user_id', auth()->id())->first();
+        }
+        
+        return view('products.show', compact('product', 'relatedProducts', 'reviews', 'isInCart', 'cartQuantity', 'userReview'));
     }
     
     public function categories(Request $request)

@@ -550,6 +550,23 @@
                 cartCountElement.textContent = count;
             }
         }
+
+        // Check for session messages on load
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                showToast("{{ session('success') }}", 'success');
+            @endif
+            
+            @if(session('error'))
+                showToast("{{ session('error') }}", 'error');
+            @endif
+            
+            @if($errors->any())
+                @foreach($errors->all() as $error)
+                    showToast("{{ $error }}", 'error');
+                @endforeach
+            @endif
+        });
     </script>
     
     @stack('scripts')

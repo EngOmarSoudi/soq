@@ -161,7 +161,7 @@
                                 <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition wishlist-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_wishlist') }}" onclick="window.location='{{ route('products.show', $product->slug) }}'">
                                     ♥
                                 </button>
-                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition add-to-cart-btn" data-product-id="{{ $product->id }}" title="{{ __('messages.add_to_cart') }}" onclick="window.location='{{ route('products.show', $product->slug) }}'">
+                                <button class="flex-1 border-2 border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg font-semibold transition" title="{{ __('messages.add_to_cart') }}" onclick="window.location='{{ route('products.show', $product->slug) }}'">
                                     {{ __('messages.add_to_cart') }}
                                 </button>
                             @else
