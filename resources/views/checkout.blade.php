@@ -195,7 +195,7 @@
                         </div>
                     @else
                          <div class="mb-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 p-3 rounded text-sm">
-                            No active bank accounts found. Please contact support.
+                            {{ __('messages.no_active_bank_accounts') }}
                          </div>
                     @endif
 
@@ -450,13 +450,13 @@
 
     function getCurrentLocation() {
         if (!navigator.geolocation) {
-            showToast('Geolocation is not supported by your browser', 'error');
+            showToast('{{ __("messages.geolocation_not_supported") }}', 'error');
             return;
         }
 
         const btn = document.querySelector('button[onclick="getCurrentLocation()"]');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="animate-pulse">Locating...</span>';
+        btn.innerHTML = '<span class="animate-pulse">{{ __("messages.locating") }}</span>';
         btn.disabled = true;
 
         navigator.geolocation.getCurrentPosition(position => {
@@ -485,7 +485,7 @@
             btn.disabled = false;
         }, error => {
             console.error('Geolocation error:', error);
-            showToast('Unable to retrieve location: ' + error.message, 'error');
+            showToast('{{ __("messages.unable_to_retrieve_location") }}' + error.message, 'error');
             btn.innerHTML = originalText;
             btn.disabled = false;
         });

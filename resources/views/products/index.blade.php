@@ -145,7 +145,7 @@
 <!-- Products Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
     @forelse($products as $product)
-        <a href="{{ route('products.show', $product->slug) }}" class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group no-underline">
+        <a href="{{ route('products.show', $product->slug) }}" class="card bg-white dark:bg-gray-800 rounded-xl overflow-hidden flex flex-col h-full group no-underline transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl">
             <!-- Product Image -->
             <div class="relative bg-gray-100 dark:bg-gray-700 h-48 overflow-hidden">
                 @if($product->image)

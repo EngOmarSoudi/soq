@@ -64,6 +64,13 @@ class ProductResource extends Resource
                     ->helperText('Custom tax amount for this product (in SAR)'),
                 
                 TextInput::make('cost_price')
+                    ->label('Product Price Before Discount')
+                    ->helperText('The original price shown as strikethrough')
+                    ->numeric(),
+                
+                TextInput::make('real_cost')
+                    ->label('Real Cost Price')
+                    ->helperText('Actual cost of the product (for internal analytics)')
                     ->numeric(),
                 
                 TextInput::make('stock_quantity')
@@ -237,6 +244,16 @@ class ProductResource extends Resource
                 
                 TextColumn::make('stock_quantity')
                     ->sortable(),
+
+                TextColumn::make('sales_count')
+                    ->label('Total Sales')
+                    ->state(function (Product $record): int {
+                        return $record->orderItems()->sum('quantity');
+                    })
+                    ->sortable(query: function ($query, string $direction): \Illuminate\Database\Eloquent\Builder {
+                        return $query->withCount('orderItems as sales_count')
+                            ->orderBy('sales_count', $direction);
+                    }),
                 
                 IconColumn::make('is_featured')
                     ->boolean()

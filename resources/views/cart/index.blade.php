@@ -43,7 +43,7 @@
                                             @endif
                                             @if($item->size)
                                                 @if($item->color), @endif
-                                                {{ __('messags.size') }}: {{ $item->size }}
+                                                {{ __('messages.size') }}: {{ $item->size }}
                                             @endif
                                         </p>
                                     @endif

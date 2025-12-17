@@ -112,6 +112,9 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
         
+        // Increment view count
+        $product->increment('views_count');
+        
         // Check if product is in user's cart and get quantity
         $isInCart = false;
         $cartQuantity = 0;

@@ -210,7 +210,7 @@
         })();
     </script>
 </head>
-<body class="antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+<body class="antialiased bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
     <!-- Header Navigation -->
     <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -222,24 +222,16 @@
                     </a>
                     
                     <nav class="hidden md:flex space-x-6">
-                        <a href="{{ route('home') }}" class="text-gray-700 dark:text-gray-300 hover:text-primary transition font-medium">
-                            {{ __('messages.home') }}
-                        </a>
-                        <!-- Products link - always goes to products page -->
-                        <a href="{{ route('products.index') }}" class="text-gray-700 dark:text-gray-300 hover:text-primary transition font-medium">
-                            {{ __('messages.products') }}
-                        </a>
-                        <!-- Categories link - goes to categories browsing page -->
-                        <a href="{{ route('categories.index') }}" class="text-gray-700 dark:text-gray-300 hover:text-primary transition font-medium">
-                            {{ __('messages.categories') }}
-                        </a>
+
                         
                         <!-- Static Pages Navigation -->
-                        @foreach(\App\Helpers\NavigationHelper::getStaticPagesForNavigation() as $page)
-                            <a href="{{ route('static-pages.show', $page->slug) }}" class="text-gray-700 dark:text-gray-300 hover:text-primary transition font-medium">
-                                {{ $page->title }}
-                            </a>
-                        @endforeach
+                        <!-- More Menu Button -->
+                        <button onclick="toggleMoreMenu()" class="text-gray-700 dark:text-gray-300 hover:text-primary transition font-medium flex items-center gap-1">
+                            {{ __('messages.more') }}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
                     </nav>
                 </div>
                 
@@ -303,6 +295,41 @@
     <main class="min-h-screen">
         @yield('content')
     </main>
+
+    <!-- More Menu Sidebar Overlay -->
+    <div id="more-menu-overlay" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 transition-opacity opacity-0" id="more-menu-backdrop" onclick="toggleMoreMenu()"></div>
+        
+        <!-- Sidebar -->
+        <div class="absolute right-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform translate-x-full" id="more-menu-sidebar">
+            <div class="flex flex-col h-full">
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('messages.more') }}</h2>
+                    <button onclick="toggleMoreMenu()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Links -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-2">
+                    @foreach(\App\Helpers\NavigationHelper::getStaticPagesForNavigation() as $page)
+                        <a href="{{ route('static-pages.show', $page->slug) }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-primary transition group">
+                            <span class="bg-gray-100 dark:bg-gray-700 group-hover:bg-white dark:group-hover:bg-gray-600 p-2 rounded-lg transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414.586l4 4a1 1 0 01.586 1.414V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="font-medium">{{ $page->title }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Footer -->
     <footer class="bg-gray-900 dark:bg-gray-950 text-gray-300 mt-20">
@@ -352,12 +379,12 @@
                         @endif
                         @if($siteSetting->twitter_url)
                             <a href="{{ $siteSetting->twitter_url }}" target="_blank" class="text-gray-400 hover:text-blue-400 transition" title="Twitter">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 00-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
                             </a>
                         @endif
                         @if($siteSetting->instagram_url)
                             <a href="{{ $siteSetting->instagram_url }}" target="_blank" class="text-gray-400 hover:text-pink-500 transition" title="Instagram">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.204-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.069-4.85.069-3.204 0-3.584-.012-4.849-.069-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.072 4.849-.072zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                             </a>
                         @endif
                         @if($siteSetting->linkedin_url)
@@ -409,12 +436,11 @@
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <p class="text-sm text-gray-400">© {{ date('Y') }} {{ $siteSetting->site_name ?? 'EcommStore' }}. {{ __('messages.all_rights_reserved') }}</p>
                     <div class="flex space-x-6 mt-4 md:mt-0">
-                        <!-- Static Pages Legal Links -->
-                        @foreach(\App\Helpers\NavigationHelper::getStaticPagesForNavigation() as $page)
-                            @if(in_array($page->slug, ['privacy-policy', 'terms-of-service']))
-                                <a href="{{ route('static-pages.show', $page->slug) }}" class="text-gray-400 hover:text-primary transition">{{ $page->title }}</a>
-                            @endif
-                        @endforeach
+                        <!-- Translatable Legal Links -->
+                        <a href="{{ route('static-pages.show', 'about') }}" class="text-gray-400 hover:text-primary transition">{{ __('messages.about_us') }}</a>
+                        <a href="{{ route('static-pages.show', 'contact') }}" class="text-gray-400 hover:text-primary transition">{{ __('messages.contact_us') }}</a>
+                        <a href="{{ route('static-pages.show', 'privacy-policy') }}" class="text-gray-400 hover:text-primary transition">{{ __('messages.privacy_policy') }}</a>
+                        <a href="{{ route('static-pages.show', 'terms-of-service') }}" class="text-gray-400 hover:text-primary transition">{{ __('messages.terms_conditions') }}</a>
                         <a href="#" class="text-gray-400 hover:text-primary transition">{{ __('messages.cookie_policy') }}</a>
                     </div>
                 </div>
@@ -567,6 +593,36 @@
                 @endforeach
             @endif
         });
+    </script>
+    
+    <script>
+        function toggleMoreMenu() {
+            const overlay = document.getElementById('more-menu-overlay');
+            const sidebar = document.getElementById('more-menu-sidebar');
+            const backdrop = document.getElementById('more-menu-backdrop');
+            
+            if (overlay.classList.contains('hidden')) {
+                // Open
+                overlay.classList.remove('hidden');
+                // Trigger reflow
+                void overlay.offsetWidth;
+                
+                backdrop.classList.remove('opacity-0');
+                sidebar.classList.remove('translate-x-full');
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Close
+                backdrop.classList.add('opacity-0');
+                sidebar.classList.add('translate-x-full');
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300); // Match transition duration
+            }
+        }
     </script>
     
     @stack('scripts')

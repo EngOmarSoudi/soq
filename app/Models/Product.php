@@ -17,6 +17,7 @@ class Product extends Model
         'price',
         'tax_amount',
         'cost_price',
+        'real_cost',
         'stock_quantity',
         'low_stock_threshold',
         'category_id',
@@ -132,6 +133,11 @@ class Product extends Model
     public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
     
     /**

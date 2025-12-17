@@ -100,6 +100,18 @@ class UserResource extends Resource
                         'customer' => 'Customer',
                         'admin' => 'Admin',
                     ]),
+                \Filament\Tables\Filters\Filter::make('recently_active')
+                    ->label('Recently Active (30 Days)')
+                    ->query(function ($query) {
+                        $thirtyDaysAgo = now()->subDays(30);
+                        return $query->where(function($q) use ($thirtyDaysAgo) {
+                            $q->where('last_login_at', '>=', $thirtyDaysAgo)
+                              ->orWhereHas('orders', function($subQ) use ($thirtyDaysAgo) {
+                                  $subQ->where('created_at', '>=', $thirtyDaysAgo);
+                              });
+                        });
+                    })
+                    ->toggle(),
             ])
             ->actions([
                 ViewAction::make(),

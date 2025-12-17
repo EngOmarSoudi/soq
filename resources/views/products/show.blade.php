@@ -30,12 +30,12 @@
                 
                 @if($allImages->count() > 1)
                     <!-- Navigation Buttons -->
-                    <button onclick="prevImage()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="prevImage()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                     </button>
-                    <button onclick="nextImage()" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="nextImage()" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
@@ -104,7 +104,7 @@
     <div>
         <!-- SKU and Brand -->
         <div class="flex gap-4 mb-4 text-gray-600 dark:text-gray-400">
-            <span>SKU: <strong>{{ $product->sku }}</strong></span>
+            <span>{{ __('messages.sku') }}: <strong>{{ $product->sku }}</strong></span>
             @if($product->brand)
                 <span>{{ __('messages.brand') }}: <strong>{{ is_array($product->brand) ? (app()->getLocale() === 'en' ? ($product->brand['en'] ?? '') : ($product->brand['ar'] ?? '')) : $product->brand }}</strong></span>
             @endif
@@ -305,7 +305,7 @@
                     <ul class="space-y-2">
                         <li class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
                             <span class="text-gray-600 dark:text-gray-400">{{ __('messages.weight') }}</span>
-                            <span>{{ $product->weight }} kg</span>
+                            <span>{{ $product->weight }} {{ __('messages.kg') }}</span>
                         </li>
                         <li class="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700">
                             <span class="text-gray-600 dark:text-gray-400">{{ __('messages.dimensions') }}</span>

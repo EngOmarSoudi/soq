@@ -21,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register Login Event Listener for Active User Tracking
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            \App\Listeners\UpdateLastLogin::class
+        );
+
         // Set locale from session or user preferences
         view()->composer('*', function ($view) {
             if (auth()->check()) {
