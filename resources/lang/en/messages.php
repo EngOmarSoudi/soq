@@ -140,6 +140,18 @@ return [
     'product_already_in_wishlist' => 'Product is already in your wishlist',
     'product_removed_from_wishlist' => 'Product removed from wishlist',
     'view' => 'View',
+    'print_receipt' => 'Print Receipt',
+    'print_a4' => 'Print Standard',
+    'print_thermal' => 'Print Thermal',
+    'order_confirmation' => 'Order Confirmation',
+    'thank_you_order' => 'Thank you for your order!',
+    'order_received_email' => 'Your order has been received and is being processed.',
+    'order_details' => 'Order Details',
+    'order_info' => 'Order Information',
+    'items' => 'Items',
+    'bank_transfer_details' => 'Bank Transfer Details',
+    'please_transfer_to' => 'Please transfer to:',
+    'iban' => 'IBAN',
     
     // Coupons
     'have_coupon' => 'Have a coupon?',

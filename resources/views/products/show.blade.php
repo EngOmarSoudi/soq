@@ -623,7 +623,7 @@
             showToast('{{ __("messages.error_occurred") }}', 'error');
         });
     });
-    });
+
 
     // Review Form Validation
     const reviewForm = document.getElementById('reviewForm');
